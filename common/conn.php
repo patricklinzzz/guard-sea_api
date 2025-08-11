@@ -2,11 +2,11 @@
   error_reporting(E_ALL);
   ini_set('display_errors', 1);
   
-  $db_host = '127.0.0.1';
+   $db_host = '127.0.0.1';
   $db_user = 'root';
-  $db_password = '';
+  $db_password = 'root';
   $db_dbname = 'GuardSea';
-  $db_port = 3307;
+  $db_port = 8889;
 
   try {
     $mysqli = new mysqli($db_host, $db_user, $db_password, $db_dbname, $db_port);
