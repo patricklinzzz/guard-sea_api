@@ -3,15 +3,15 @@
   require_once("./common/conn.php");
 
   if($_SERVER['REQUEST_METHOD']=="GET"){
- // *** 這是最終要返回的物件 ***
+    // *** 這是最終要返回的物件 ***
     $response_data = new stdClass();
 
-    // 1. 獲取新聞列表 (使用 JOIN，方便列表頁直接顯示分類名稱)
+    // 1. 獲取新聞列表
     $sql_news = "SELECT 
                    n.news_id,
                    n.title,
                    n.content,
-                   DATE(n.publish_date) AS publish_date, /*修改成date函式不顯示時分秒 */
+                   DATE(n.publish_date) AS publish_date,
                    n.category_id,
                    n.image_url,
                    n.status,
@@ -25,10 +25,27 @@
     $result_news = $stmt_news->get_result();
     $news_list = $result_news->fetch_all(MYSQLI_ASSOC);
     
-    // 將新聞列表放入返回物件
+    
+    // 獲取封面圖start
+    // 讓當前的協議 (http) 和主機名稱+端口 (localhost:8888) 讓上傳的圖片圖片能讀到後端的網址 而非讀到前台的網址
+    $baseUrl = 'http://' . $_SERVER['HTTP_HOST'];
+
+    // 遍歷新聞列表，為 image_url 加上完整的 base URL
+    foreach ($news_list as &$news_item) { // 使用 & 引用來直接修改陣列元素
+        // 確保 image_url 不是空的，並且不是一個完整的 URL
+        if (!empty($news_item['image_url']) && strpos($news_item['image_url'], 'http') !== 0) {
+            $news_item['image_url'] = $baseUrl . $news_item['image_url'];
+        }
+    }
+    unset($news_item); // 斷開最後一個元素的引用
+
+
+    // 將處理過的新聞列表放入返回物件
     $response_data->news = $news_list;
 
-    // 2. 獲取分類列表 (給新增/編輯頁的下拉選單使用)
+     // 獲取封面圖end
+
+    // 2. 獲取分類列表
     $sql_categories = "SELECT category_id, category_name FROM news_categories";
     $stmt_categories = $mysqli->prepare($sql_categories);
     $stmt_categories->execute();
