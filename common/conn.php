@@ -3,9 +3,9 @@
   ini_set('display_errors', 1);
   
   $db_host = '127.0.0.1';
-  $db_user = 'root';
-  $db_password = 'root';
-  $db_dbname = 'guard_sea';
+  $db_user = '';
+  $db_password = '';
+  $db_dbname = 'guardsea';
   $db_port = 8889;
 
   try {

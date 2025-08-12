@@ -3,6 +3,7 @@
   require_once("./common/conn.php");
 
   if($_SERVER['REQUEST_METHOD']=="GET"){
+    header("Content-Type: application/json; charset=UTF-8");
     // *** 這是最終要返回的物件 ***
     $response_data = new stdClass();
 
@@ -62,6 +63,7 @@
     exit();
   }
   http_response_code(403);
+  header("Content-Type: application/json; charset=UTF-8");
   $reply_data = new stdClass();
   $reply_data->error = "拒絕存取";
   echo json_encode($reply_data);
