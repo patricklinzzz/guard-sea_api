@@ -13,28 +13,23 @@
     $input = file_get_contents("php://input");
     $_PATCH = json_decode($input, true);
     
-    $sql = "UPDATE questions SET 
-    quiz_id = ?, question_description = ?, option_1 = ?, option_2 = ?, option_3 = ?, 
-    answer = ?, explanation = ?
-    WHERE question_id = ?;";
+    $sql = "UPDATE quizzes SET quiz_description = ?, question_num = ?, pass_grade = ? WHERE quiz_id = ?;";
     $stmt = $mysqli->prepare($sql);
-    
 
-    $stmt->bind_param("issssisi", 
-    $_PATCH["quiz_id"], 
-    $_PATCH["question_description"],
-    $_PATCH["option_1"],
-    $_PATCH["option_2"],
-    $_PATCH["option_3"],
-    $_PATCH["answer"],
-    $_PATCH["explanation"],
-    $_PATCH["question_id"],
+    $stmt->bind_param("siii", 
+    $_PATCH["quiz_description"],
+    $_PATCH["question_num"],
+    $_PATCH["pass_grade"],
+    $_PATCH["quiz_id"],
   );
+
 
     $stmt->execute();
     
+
     $reply_data = ["result" => "更新成功"];
     echo json_encode($reply_data);
+
 
     $mysqli->close();
 
