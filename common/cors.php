@@ -3,7 +3,8 @@
   $allowed_origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5500",
-    "http://localhost:5500"
+    "http://localhost:5500",
+    "http://localhost:8888"
   ];
   // 抓到請求的來源網域
   $origin = $_SERVER['HTTP_ORIGIN'] ?? ''; // http://localhost:5500 或 http://127.0.0.1:5500
