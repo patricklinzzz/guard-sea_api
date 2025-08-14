@@ -46,14 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] == "GET") {
         $news_list[] = $news_item;
     }
 
-    // 處理圖片 URL 的邏輯
-    $baseUrl = 'http://' . $_SERVER['HTTP_HOST'];
-    foreach ($news_list as &$news_item) {
-        if (!empty($news_item['image_url']) && strpos($news_item['image_url'], 'http') !== 0) {
-            $news_item['image_url'] = $baseUrl . $news_item['image_url'];
-        }
-    }
-    unset($news_item);
+    
 
     $response_data->news = $news_list;
 
