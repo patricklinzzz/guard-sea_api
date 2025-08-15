@@ -2,16 +2,22 @@
   // 允許的域名列表
   $allowed_origins = [
     "http://localhost:5173",
+    "http://localhost:5174",
     "http://127.0.0.1:5500",
     "http://localhost:5500",
     "http://localhost:8888"
   ];
   // 抓到請求的來源網域
-  $origin = $_SERVER['HTTP_ORIGIN'] ?? ''; // http://localhost:5500 或 http://127.0.0.1:5500
-  // 檢查來源是否在允許列表中
+  $origin = $_SERVER['HTTP_ORIGIN'] ?? ''; 
+
   if (in_array($origin, $allowed_origins)) {
     header("Access-Control-Allow-Origin: " . $origin);
   }
-header("Access-Control-Allow-Methods: GET, POST, PATCH, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+
+  header("Access-Control-Allow-Methods: GET, POST, PATCH, PUT, DELETE, OPTIONS");
+  header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+  if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit(); 
+  }
 ?>
