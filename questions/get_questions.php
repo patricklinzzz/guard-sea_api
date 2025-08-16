@@ -4,6 +4,7 @@
 
   if($_SERVER['REQUEST_METHOD']=="GET"){
 
+    $mysqli->options(MYSQLI_OPT_INT_AND_FLOAT_NATIVE, 1);
     $sql = "SELECT * FROM questions;";
     // $stmt = $mysqli->prepare($sql);
     // $stmt->execute();
