@@ -5,27 +5,29 @@
   if($_SERVER['REQUEST_METHOD']=="GET"){
 
     $sql = "SELECT * FROM questions;";
-    $stmt = $mysqli->prepare($sql);
-    $stmt->execute();
+    // $stmt = $mysqli->prepare($sql);
+    // $stmt->execute();
 
-    $stmt->bind_result($question_id, $quiz_id, $question_description,$option_1, $option_2, $option_3, $answer, $explanation);
+    $result = $mysqli->query($sql);
+    $response_data = $result->fetch_all(MYSQLI_ASSOC);
 
-    $response_data = []; 
+    // $stmt->bind_result($question_id, $quiz_id, $question_description,$option_1, $option_2, $option_3, $answer, $explanation);
 
-    while ($stmt->fetch()) {
-        $row = [
-            'question_id' => $question_id,
-            'quiz_id' => $quiz_id,
-            'question_description' => $question_description,
-            'option_1' => $option_1,
-            'option_2' => $option_2,
-            'option_3' => $option_3,
-            'answer' => $answer,
-            'explanation' => $explanation
-        ];
-        $response_data[] = $row; 
-    }
-    $stmt->close();
+    // $response_data = []; 
+
+    // while ($stmt->fetch()) {
+    //     $row = [
+    //         'question_id' => $question_id,
+    //         'quiz_id' => $quiz_id,
+    //         'question_description' => $question_description,
+    //         'option_1' => $option_1,
+    //         'option_2' => $option_2,
+    //         'option_3' => $option_3,
+    //         'answer' => $answer,
+    //         'explanation' => $explanation
+    //     ];
+    //     $response_data[] = $row; 
+    // }
 
     echo json_encode($response_data);
     $mysqli->close();
