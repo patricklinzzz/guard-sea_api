@@ -39,16 +39,10 @@
     // echo '主機資訊：' . $mysqli->host_info;
     // echo '<br>';
     // echo 'MySQL 版本資訊：' . $mysqli->server_info;
-
     // $mysqli->close(); // 關閉資料庫連線
-
-  } catch (mysqli_sql_exception $e) { // 如果 try 區塊裡的程式有錯，就會執行到這裡的 catch
-
+    } catch (mysqli_sql_exception $e) { // 如果 try 區塊裡的程式有錯，就會執行到這裡的 catch
     echo '<h1 style="color: red;">連線失敗。</h1>';
     echo "<hr>";
     echo '錯誤代碼：' . $e->getCode() . '<br>';
     echo '錯誤訊息：' . $e->getMessage() . '<br>';
-
-    }
-    
-?>
+}?>
