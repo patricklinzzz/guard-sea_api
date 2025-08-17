@@ -20,9 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
           FROM coupons c
           ORDER BY c.coupon_id DESC";
 
-  $stmt = $mysqli->prepare($sql);
-  $stmt->execute();
-  $result = $stmt->get_result();
+  // $stmt = $mysqli->prepare($sql);
+  // $stmt->execute();
+  // $result = $stmt->get_result();
+$result = $mysqli->query($sql);
   $response->coupons = $result->fetch_all(MYSQLI_ASSOC);
 
   echo json_encode($response, JSON_UNESCAPED_UNICODE);
