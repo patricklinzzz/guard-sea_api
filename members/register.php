@@ -12,10 +12,10 @@ if (empty($data['username']) || empty($data['name']) || empty($data['gender']) |
   exit;
 }
 
-$username = mysqli_real_escape_string($mysqli, $data['username']);
-$name = mysqli_real_escape_string($mysqli, $data['name']);
-$gender = mysqli_real_escape_string($mysqli, $data['gender']);
-$email = mysqli_real_escape_string($mysqli, $data['email']);
+$username = $mysqli->real_escape_string($data['username']);
+$name = $mysqli->real_escape_string($data['name']);
+$gender = $mysqli->real_escape_string($data['gender']);
+$email = $mysqli->real_escape_string($data['email']);
 $password = $data['password'];
 
 $sql_check = "SELECT username, email FROM members WHERE username = '$username' OR email = '$email'";
