@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($result && $result->num_rows > 0) {
       $user = $result->fetch_assoc();
       if (password_verify($password, $user['password'])) {
-        if ($user['status'] == 1) {
+        if ($user['status'] == 0) {
           http_response_code(403); 
           echo json_encode(["success" => false, "message" => "您的帳號已被停權"]);
           exit();
