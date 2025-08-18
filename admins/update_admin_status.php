@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
   $input = file_get_contents('php://input');
   $data = json_decode($input, true);
 
-  $adminId = $data['id'] ?? null;
+  $adminId = (int)($data['id']) ?? null;
   $newStatus = $data['status'] ?? null;
 
   if ($adminId === null || $newStatus === null) {
@@ -18,6 +18,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
   }
 
   try {
+    if ($adminId === 1) {
+      http_response_code(403);
+      echo json_encode(["success" => false, "error" => "這是預設帳號不可停權。"]);
+      exit();
+    }
+
     $adminId = $mysqli->real_escape_string(($adminId));
     $newStatus = (int)$newStatus;
     $sql = "UPDATE administrators SET status = " . $newStatus . " WHERE administrator_id = '" . $adminId . "'";
