@@ -10,26 +10,30 @@
   
   if($_SERVER['REQUEST_METHOD'] == "PATCH"){
 
+    
     $input = file_get_contents("php://input");
     $_PATCH = json_decode($input, true);
+    $password = $_PATCH["oldPassword"]; 
+    $member_id = $_SESSION["member_id"];
 
-    $password = $_PATCH["password"]; 
-    // $member_id = $_SESSION["member_id"];
-    $member_id = 3;
-
-    $sql = "UPDATE members SET password = '$password' WHERE $member_id = 1;";
-
-    $result = $mysqli->query($sql);
-
-
-
-    
-    $reply_data = ["result" => "更新成功"];
-    echo json_encode($reply_data);
-
-    $mysqli->close();
-
-    exit();
+    $confirm_pwd = "SELECT password FROM members WHERE member_id = $member_id;";
+    $result = $mysqli->query($confirm_pwd);
+    if ($result && $result->num_rows > 0) {
+      $user = $result->fetch_assoc();
+      if (password_verify($password, $user['password'])) {
+        $new_pwd = password_hash($_PATCH['newPassword'], PASSWORD_DEFAULT);
+        $sql = "UPDATE members SET password = '$new_pwd' WHERE member_id = $member_id;";
+        $mysqli->query($sql);
+        echo json_encode(["success" => true, "message" => "更新成功"]);
+        $mysqli->close();
+        exit();
+      } else{
+        http_response_code(401);
+        echo json_encode(["success" => false, "message" => "更新失敗"]);
+        $mysqli->close();
+        exit();
+      }
+    }
   }
   
   http_response_code(403);

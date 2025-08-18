@@ -13,16 +13,15 @@
     $input = file_get_contents("php://input");
     $_PATCH = json_decode($input, true);
 
-    $username = $_PATCH["username"]; 
-    $phone_number = $_PATCH["phone_number"];
+    $username = $_PATCH["name"]; 
+    $phone_number = $_PATCH["phone"];
     $gender = $_PATCH["gender"];
     $address = $_PATCH["address"];
-    $birthday = $_PATCH["birthday"];
-    // $member_id = $_SESSION["member_id"];
-    $member_id = 3;
+    $birthday = $_PATCH["birthdate"];
+    $member_id = $_SESSION["member_id"];
 
     $sql = "UPDATE members SET 
-    username = '$username', phone_number = '$phone_number', gender = '$gender', address = '$address' WHERE member_id = $member_id;";
+    username = '$username', phone_number = '$phone_number', gender = '$gender', address = '$address', birthday = '$birthday' WHERE member_id = $member_id;";
 
     $result = $mysqli->query($sql);
 

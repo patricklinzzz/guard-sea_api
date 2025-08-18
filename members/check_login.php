@@ -1,24 +1,22 @@
 <?php
   require_once("../common/cors.php");
   require_once("../common/conn.php");
-  // session_start();
+  session_start();
 
 
   if($_SERVER['REQUEST_METHOD']=="GET"){
-    
-    // $_SESSION['member_id'] = 2;
-    // $_SESSION['username'] = 'wubai';
-    if(isset($_SESSION["member_id"])){ 
+    if(isset($_SESSION['member_id'])){ 
       echo json_encode([
         'isLoggedIn' => true,
         'member_id' => $_SESSION['member_id'],
-        'username' => $_SESSION['username']
+        'fullname' => $_SESSION['fullname']
       ]);
     } else {
       echo json_encode([
           'isLoggedIn' => false
       ]);
     }
+
     exit();
   }
   http_response_code(403);
