@@ -1,7 +1,8 @@
 <?php
+session_start();//session方法認證
 require_once('../common/conn.php');
 require_once('../common/cors.php');
-session_start();//session方法認證
+
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   header("Content-Type:application/json;charset=UTF-8");

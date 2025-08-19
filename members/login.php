@@ -1,7 +1,7 @@
 <?php
+session_start();
 require_once('../common/conn.php');
 require_once('../common/cors.php');
-session_start();
 header("Content-Type: application/json; charset=UTF-8");
 $data = json_decode(file_get_contents('php://input'), true);
 

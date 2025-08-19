@@ -4,14 +4,14 @@
 
   if($_SERVER['REQUEST_METHOD']=="GET"){
 
-    $mysqli->options(MYSQLI_OPT_INT_AND_FLOAT_NATIVE, 1);
+    // $mysqli->options(MYSQLI_OPT_INT_AND_FLOAT_NATIVE, 1);
     $sql = "SELECT * FROM quizzes;";
 
     // $stmt = $mysqli->prepare($sql);
     // $stmt->execute();
     // $result = $stmt->get_result();
     $result = $mysqli->query($sql);
-    
+
     $response_data = $result->fetch_all(MYSQLI_ASSOC);
     
 

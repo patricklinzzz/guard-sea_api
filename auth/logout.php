@@ -1,7 +1,8 @@
 <?php
+session_start();
 require_once("../common/cors.php");
 require_once("../common/conn.php");
-session_start();
+
 
 header("Content-Type: application/json;charset=UTF-8");
 session_unset();

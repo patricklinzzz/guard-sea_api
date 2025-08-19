@@ -1,8 +1,8 @@
 <?php
+session_start();
 require_once '../common/cors.php';
 require_once '../common/conn.php';
 header("Content-Type: application/json; charset=UTF-8");
-session_start();
 
 if (!isset($_SESSION['member_id'])) {
   http_response_code(401);
