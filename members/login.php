@@ -18,7 +18,7 @@ $sql = "SELECT * FROM members WHERE username = '$username'";
 $result = $mysqli->query($sql);
 
 if ($result->num_rows === 0) {
-  http_response_code(401); 
+  http_response_code(401);
   echo json_encode(['success' => false, 'error' => '帳號或密碼不正確。']);
   exit;
 }
@@ -27,9 +27,14 @@ $member = $result->fetch_assoc();
 $result->free();
 
 if (!password_verify($password, $member['password'])) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'error' => '帳號或密碼不正確。']);
-    exit;
+  http_response_code(401);
+  echo json_encode(['success' => false, 'error' => '帳號或密碼不正確。']);
+  exit;
+}
+if ($member['status'] == 0) {
+  http_response_code(403);
+  echo json_encode(["success" => false, "message" => "您的帳號已被停權"]);
+  exit();
 }
 
 $_SESSION['member_id'] = $member['member_id'];
@@ -37,11 +42,11 @@ $_SESSION['fullname'] = $member['fullname'];
 
 unset($member['password']);
 
-http_response_code(200); 
+http_response_code(200);
 echo json_encode([
-    'success' => true,
-    'message' => '登入成功！',
-    'member' => $member 
+  'success' => true,
+  'message' => '登入成功！',
+  'member' => $member
 ]);
 
 $mysqli->close();
