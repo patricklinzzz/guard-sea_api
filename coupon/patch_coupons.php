@@ -1,13 +1,10 @@
 <?php
 // File: coupons_patch.php
-require_once __DIR__ . '/../common/cors.php';
-require_once __DIR__ . '/../common/conn.php';
+require_once("../common/cors.php");
+  require_once("../common/conn.php");
 
 header("Content-Type: application/json; charset=UTF-8");
 
-// ===== 可開啟偵錯（上線請關閉） =====
-// error_reporting(E_ALL);
-// ini_set('display_errors', 1);
 
 // ===== 處理 CORS 預檢 =====
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
