@@ -21,15 +21,6 @@ if ($_SERVER['REQUEST_METHOD'] === "GET") {
     }
     $activities = $result_events->fetch_all(MYSQLI_ASSOC);
 
-    // 處理圖片 URL
-    $baseUrl = 'http://' . $_SERVER['HTTP_HOST'];
-    foreach ($activities as &$activity) {
-        if (!empty($activity['image_url']) && strpos($activity['image_url'], 'http') !== 0) {
-            $activity['image_url'] = $baseUrl . $activity['image_url'];
-        }
-    }
-    unset($activity);
-
     $response_data->events = $activities;
 
     // 獲取分類列表，直接使用 query()
