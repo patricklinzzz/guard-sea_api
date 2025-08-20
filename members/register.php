@@ -24,8 +24,10 @@ $result_check = $mysqli->query($sql_check);
 if ($result_check->num_rows > 0) {
   $row = $result_check->fetch_assoc();
   if ($row['username'] === $username) {
+    http_response_code(403);
     echo json_encode(['success' => false, 'error' => '此帳號已被使用。']);
   } elseif ($row['email'] === $email) {
+    http_response_code(403);
     echo json_encode(['success' => false, 'error' => '此電子郵件已被註冊。']);
   }
   $result_check->free();
