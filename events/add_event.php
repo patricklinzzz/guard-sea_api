@@ -1,106 +1,90 @@
 <?php
-require_once("../common/cors.php");
-require_once("../common/conn.php");
-require_once("../coverimage.php");
+// 設定 CORS 標頭
+header("Access-Control-Allow-Origin: http://localhost:5173");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header('Content-Type: application/json');
 
-header("Content-Type: application/json; charset=UTF-8");
+// 引入你的資料庫連線檔案
+require_once __DIR__ . '/../common/conn.php'; 
 
-if ($_SERVER['REQUEST_METHOD'] == "POST") {
+$response = [
+    'status' => 'error',
+    'message' => '新增活動失敗'
+];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // 從 $_POST 全域變數中獲取資料 (用於處理 FormData)
+    $title = $_POST['title'] ?? null;
+    $preface = $_POST['preface'] ?? null;
+    $description = $_POST['description'] ?? null;
+    
+    $start_date = $_POST['start_date'] ?? null;
+    $end_date = $_POST['end_date'] ?? null;
+    $registration_close_date = $_POST['registration_close_date'] ?? null;
+
+    $location = $_POST['location'] ?? null;
+    $quota = $_POST['quota'] ?? 0;
+    $notes = $_POST['notes'] ?? null;
+    $category_id = $_POST['category_id'] ?? null;
+    $status = $_POST['status'] ?? '報名中';
+    
+    // 檢查必填欄位
+    if (empty($title) || empty($category_id) || empty($start_date) || empty($end_date) || empty($registration_close_date)) {
+        $response['message'] = '缺少必要欄位';
+        echo json_encode($response);
+        exit;
+    }
+
+    // 處理圖片上傳
+    $imageUrl = null;
+    if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = '../images/'; // 上傳目錄
+        $uploadFile = $uploadDir . basename($_FILES['image_file']['name']);
+        
+        if (move_uploaded_file($_FILES['image_file']['tmp_name'], $uploadFile)) {
+            // 關鍵：只回傳相對路徑
+            $imageUrl = 'images/' . basename($_FILES['image_file']['name']);
+        } else {
+            $response['message'] = '圖片上傳失敗';
+            echo json_encode($response);
+            exit;
+        }
+    }
 
     try {
-        $data = $_POST;
-
-        // 檢查必填欄位
-        $required_fields = ['category_id', 'title', 'preface', 'description', 'presenter', 'start_date', 'end_date', 'location', 'quota', 'registration_close_date', 'status'];
-        foreach ($required_fields as $field) {
-            if (!isset($data[$field])) {
-                http_response_code(400);
-                echo json_encode(["status" => "error", "message" => "資料不完整，缺少必填欄位: " . $field], JSON_UNESCAPED_UNICODE);
-                exit();
-            }
-        }
-
-        // 處理圖片上傳
-        $image_url = handle_cover_image_upload('image_file', 'activities/', 'act_');
-
-        // 使用 mysqli_real_escape_string 來處理所有變數，以防止 SQL 注入
-        $category_id = mysqli_real_escape_string($mysqli, $data['category_id']);
-        $title = mysqli_real_escape_string($mysqli, $data['title']);
-        $preface = mysqli_real_escape_string($mysqli, $data['preface']);
-        $description = mysqli_real_escape_string($mysqli, $data['description']);
-        $presenter = mysqli_real_escape_string($mysqli, $data['presenter']);
-        $start_date = mysqli_real_escape_string($mysqli, $data['start_date']);
-        $end_date = mysqli_real_escape_string($mysqli, $data['end_date']);
-        $location = mysqli_real_escape_string($mysqli, $data['location']);
-        $quota = mysqli_real_escape_string($mysqli, $data['quota']);
-        $registration_close_date = mysqli_real_escape_string($mysqli, $data['registration_close_date']);
-        $status = mysqli_real_escape_string($mysqli, $data['status']);
-
-        // 可選欄位
-        $map_url = isset($data['map_url']) ? mysqli_real_escape_string($mysqli, $data['map_url']) : '';
-        $notes = isset($data['notes']) ? mysqli_real_escape_string($mysqli, $data['notes']) : '';
-        $current_participants = 0; // 靜態值，不需要從前端傳入
-
-        // SQL INSERT 語法 (使用字串拼接)
+        // 準備 SQL 插入語句
         $sql = "INSERT INTO activities (
-            category_id, 
-            title, 
-            preface, 
-            description, 
-            presenter, 
-            start_date, 
-            end_date, 
-            location, 
-            quota, 
-            current_participants, 
-            image_url, 
-            registration_close_date, 
-            map_url, 
-            status, 
-            notes
-        ) VALUES (
-            '$category_id', 
-            '$title', 
-            '$preface', 
-            '$description', 
-            '$presenter', 
-            '$start_date', 
-            '$end_date', 
-            '$location', 
-            '$quota', 
-            '$current_participants', 
-            '$image_url', 
-            '$registration_close_date', 
-            '$map_url', 
-            '$status', 
-            '$notes'
-        )";
-
-        // 執行語法並檢查結果
-        $result = $mysqli->query($sql);
-
-        if ($result) {
-            http_response_code(201);
-            echo json_encode(['status' => 'success', 'message' => '活動新增成功！', 'activity_id' => $mysqli->insert_id], JSON_UNESCAPED_UNICODE);
+            title, category_id, preface, description, start_date, 
+            end_date, location, quota, registration_close_date, notes, status, image_url
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        $stmt = $mysqli->prepare($sql);
+        
+        $stmt->bind_param(
+            "sissssssssss", 
+            $title, $category_id, $preface, $description, $start_date, 
+            $end_date, $location, $quota, $registration_close_date, $notes, $status, $imageUrl
+        );
+        
+        if ($stmt->execute()) {
+            $response['status'] = 'success';
+            $response['message'] = '活動新增成功';
+            $response['image_url'] = $imageUrl; 
         } else {
-            throw new Exception("新增活動失敗: " . $mysqli->error);
+            $response['message'] = '資料庫插入錯誤: ' . $stmt->error;
+            error_log('Database Error: ' . $stmt->error);
         }
 
     } catch (Exception $e) {
-        http_response_code(500);
-        echo json_encode([
-            "status" => "error",
-            "message" => "伺服器發生錯誤",
-            "details" => $e->getMessage()
-        ], JSON_UNESCAPED_UNICODE);
-    } finally {
-        if (isset($mysqli)) {
-            $mysqli->close();
-        }
+        $response['message'] = '伺服器錯誤: ' . $e->getMessage();
+        error_log('Server Error: ' . $e->getMessage());
     }
-    exit();
+} else {
+    header("HTTP/1.1 405 Method Not Allowed");
+    $response['message'] = '不允許的請求方法';
 }
 
-http_response_code(403);
-echo json_encode(["status" => "error", "message" => "拒絕存取"], JSON_UNESCAPED_UNICODE);
+echo json_encode($response);
+$mysqli->close();
 ?>
