@@ -24,20 +24,37 @@
     $gender = $_POST["gender"];
     $address = $_POST["address"];
     $birthday = $_POST["birthdate"];
+    $file_uploaded = isset($_POST["avatar_url"]);
+    if($file_uploaded){
+        $reset = $_POST["avatar_url"] == 'reset';
+    } else
+      $reset = false;
 
-    $image_url_for_db = handle_cover_image_upload(
+    $image_url_for_db = $reset ? '' : handle_cover_image_upload(
       'avatar_url',
       'member/', 
       "member_id=$member_id" . "_"
-  );
-    if(!empty($image_url_for_db)){
+    );
+    if(!$reset && !empty($image_url_for_db)){
       $avatar_res = $image_url_for_db;
-      unlink('../' . $avatar_pre);
-    } else $avatar_res = $avatar_pre;
+      if(!empty($avatar_pre))
+        unlink('../' . $avatar_pre);
+    } 
+    else if($reset){
+      $avatar_res = '';
+      if(!empty($avatar_pre))
+        unlink('../' . $avatar_pre);
+    }  
+    else $avatar_res = $avatar_pre;
 
+    $sql_pre = "UPDATE members SET 
+    fullname = '$username', phone_number = '$phone_number', gender = '$gender', address = '$address', avatar_url = '$avatar_res'";
+    if(($birthday === 'null')){
+      $sql = $sql_pre . "WHERE member_id = $member_id;";
+    } else{
+      $sql = $sql_pre . ", birthday = '$birthday' WHERE member_id = $member_id;";
+    }
 
-    $sql = "UPDATE members SET 
-    username = '$username', phone_number = '$phone_number', gender = '$gender', address = '$address', birthday = '$birthday', avatar_url = '$avatar_res' WHERE member_id = $member_id;";
 
     $result = $mysqli->query($sql);
 
