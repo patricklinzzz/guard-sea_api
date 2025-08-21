@@ -51,9 +51,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
     echo json_encode(["success" => false, "error" => "伺服器錯誤: " . $e->getMessage()]);
     exit();
   }
-} else {
-  http_response_code(405);
-  header("Allow: PATCH");
-  echo json_encode(["success" => false, "error" => "僅允許 PATCH 請求。"]);
-  exit();
-}
+} 
