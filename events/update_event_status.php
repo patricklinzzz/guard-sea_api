@@ -1,5 +1,5 @@
 <?php
-// 錯誤報告
+// 錯誤報告 (用於開發環境，上線前應關閉)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -29,22 +29,20 @@ if (!isset($data['id']) || !isset($data['status'])) {
 
 // 執行資料庫更新
 try {
-    $event_id = (int)$data['id'];
-    $status = $data['status'];
+    // 將接收到的資料進行型別轉換並進行跳脫處理
+    $event_id_safe = (int)$data['id']; // 先轉為整數，確保數值型別
+    $status_safe = $mysqli->real_escape_string($data['status']); // 跳脫字串中的特殊字元
 
-    // 使用預處理語句來安全地更新資料
+    // 直接將變數拼接到 SQL 查詢字串中
     // 主要鍵欄位已從 'id' 修正為 'activity_id'
-    $sql = "UPDATE activities SET status = ? WHERE activity_id = ?"; 
-    $stmt = $mysqli->prepare($sql);
+    $sql = "UPDATE activities SET status = '" . $status_safe . "' WHERE activity_id = " . $event_id_safe; 
     
-    if (!$stmt) {
-        throw new Exception("預處理語句失敗: " . $mysqli->error);
-    }
+    // 執行查詢
+    $result = $mysqli->query($sql);
 
-    $stmt->bind_param("si", $status, $event_id);
-
-    if ($stmt->execute()) {
-        if ($stmt->affected_rows > 0) {
+    if ($result) {
+        // 檢查是否有影響的行數，判斷更新是否成功
+        if ($mysqli->affected_rows > 0) {
             http_response_code(200);
             echo json_encode(["status" => "success", "message" => "活動狀態更新成功！"], JSON_UNESCAPED_UNICODE);
         } else {
@@ -53,14 +51,16 @@ try {
             echo json_encode(["status" => "error", "message" => "找不到該活動或狀態已是最新"], JSON_UNESCAPED_UNICODE);
         }
     } else {
-        throw new Exception("執行更新失敗: " . $stmt->error);
+        // 查詢執行失敗
+        throw new Exception("執行更新失敗: " . $mysqli->error);
     }
 
 } catch (Exception $e) {
+    // 捕獲並處理任何異常
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => "伺服器錯誤", "details" => $e->getMessage()], JSON_UNESCAPED_UNICODE);
 } finally {
-    if (isset($stmt)) $stmt->close();
+    // 無論成功或失敗，最後關閉資料庫連線
     if (isset($mysqli)) $mysqli->close();
 }
 ?>

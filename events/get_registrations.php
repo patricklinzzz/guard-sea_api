@@ -16,35 +16,31 @@ if ($_SERVER['REQUEST_METHOD'] === "GET") {
         exit;
     }
 
-    // SQL 查詢，只從 activity_registrations 表格中選取欄位
-    // 這段語句沒有 JOIN，也不選取 'name' 和 'email'
-    $sql = "SELECT r.activity_registration_id, r.member_id,
+    // 將變數進行跳脫處理，避免部分 SQL 注入問題
+    $activity_id_safe = $mysqli->real_escape_string($activity_id);
+    
+    // SQL 查詢，直接將變數拼接到查詢字串中
+    // 欄位 'name' 和 'email' 沒有被選取
+    $sql = "SELECT r.activity_registration_id, r.member_id, 
                     r.phone, r.contact_person, r.contact_phone, r.notes, r.registration_date
             FROM activity_registrations r
-            WHERE r.activity_id = ?
+            WHERE r.activity_id = " . $activity_id_safe . "
             ORDER BY r.registration_date ASC";
 
-    // 使用預處理語句，防止 SQL 注入
-    $stmt = $mysqli->prepare($sql);
-    
-    // 檢查預處理是否成功
-    if ($stmt === false) {
-        http_response_code(500);
-        echo json_encode(["status" => "error", "message" => "SQL 語法錯誤: " . $mysqli->error], JSON_UNESCAPED_UNICODE);
-        exit;
-    }
-    
-    $stmt->bind_param("i", $activity_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    // 執行查詢
+    $result = $mysqli->query($sql);
 
     // 檢查是否有查詢結果
-    if ($result->num_rows > 0) {
+    if ($result && $result->num_rows > 0) {
         $registrations = $result->fetch_all(MYSQLI_ASSOC);
         echo json_encode([
             "status" => "success",
             "data" => $registrations
         ], JSON_UNESCAPED_UNICODE);
+    } else if ($result === false) {
+        http_response_code(500);
+        echo json_encode(["status" => "error", "message" => "SQL 查詢錯誤: " . $mysqli->error], JSON_UNESCAPED_UNICODE);
+        exit;
     } else {
         // 如果沒有找到任何報名紀錄
         echo json_encode([
@@ -54,7 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === "GET") {
         ], JSON_UNESCAPED_UNICODE);
     }
 
-    $stmt->close();
     $mysqli->close();
     exit;
 }

@@ -75,6 +75,7 @@ try {
         $status = mysqli_real_escape_string($mysqli, $_POST["status"] ?? '');
         $notes = mysqli_real_escape_string($mysqli, $_POST["notes"] ?? '');
         $category_id = intval($_POST["category_id"] ?? 0);
+        $presenter = mysqli_real_escape_string($mysqli, $_POST["presenter"] ?? '');
 
         $sql_parts = [
             "title = '$title'",
@@ -88,7 +89,8 @@ try {
             "status = '$status'",
             "notes = '$notes'",
             "category_id = $category_id",
-            "image_url = '" . mysqli_real_escape_string($mysqli, $image_url_for_db ?? '') . "'"
+            "image_url = '" . mysqli_real_escape_string($mysqli, $image_url_for_db ?? '') . "'",
+            "presenter = '$presenter'"
         ];
 
         $sql = "UPDATE activities SET " . implode(", ", $sql_parts) . " WHERE activity_id = $activity_id";
