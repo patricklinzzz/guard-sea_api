@@ -1,0 +1,31 @@
+[22-Aug-2025 00:31:55 Asia/Taipei] PHP Warning:  require_once(../payment/generateMacValue.php): Failed to open stream: No such file or directory in /home3/tibamefe/public_html/cjd101/g1/api/orders/post_order_create.php on line 154
+[22-Aug-2025 00:31:55 Asia/Taipei] PHP Fatal error:  Uncaught Error: Failed opening required '../payment/generateMacValue.php' (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home3/tibamefe/public_html/cjd101/g1/api/orders/post_order_create.php:154
+Stack trace:
+#0 {main}
+  thrown in /home3/tibamefe/public_html/cjd101/g1/api/orders/post_order_create.php on line 154
+[22-Aug-2025 00:35:32 Asia/Taipei] PHP Warning:  require_once(../payment/generateMacValue.php): Failed to open stream: No such file or directory in /home3/tibamefe/public_html/cjd101/g1/api/orders/post_order_create.php on line 154
+[22-Aug-2025 00:35:32 Asia/Taipei] PHP Fatal error:  Uncaught Error: Failed opening required '../payment/generateMacValue.php' (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home3/tibamefe/public_html/cjd101/g1/api/orders/post_order_create.php:154
+Stack trace:
+#0 {main}
+  thrown in /home3/tibamefe/public_html/cjd101/g1/api/orders/post_order_create.php on line 154
+[22-Aug-2025 00:39:20 Asia/Taipei] PHP Warning:  require_once(../payment/generateMacValue.php): Failed to open stream: No such file or directory in /home3/tibamefe/public_html/cjd101/g1/api/orders/post_order_create.php on line 154
+[22-Aug-2025 00:39:20 Asia/Taipei] PHP Fatal error:  Uncaught Error: Failed opening required '../payment/generateMacValue.php' (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home3/tibamefe/public_html/cjd101/g1/api/orders/post_order_create.php:154
+Stack trace:
+#0 {main}
+  thrown in /home3/tibamefe/public_html/cjd101/g1/api/orders/post_order_create.php on line 154
+[22-Aug-2025 00:44:48 Asia/Taipei] PHP Warning:  require_once(../payment/generateMacValue.php): Failed to open stream: No such file or directory in /home3/tibamefe/public_html/cjd101/g1/api/orders/post_order_create.php on line 154
+[22-Aug-2025 00:44:48 Asia/Taipei] PHP Fatal error:  Uncaught Error: Failed opening required '../payment/generateMacValue.php' (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home3/tibamefe/public_html/cjd101/g1/api/orders/post_order_create.php:154
+Stack trace:
+#0 {main}
+  thrown in /home3/tibamefe/public_html/cjd101/g1/api/orders/post_order_create.php on line 154
+[22-Aug-2025 00:49:48 Asia/Taipei] PHP Warning:  require_once(../payment/generateMacValue.php): Failed to open stream: No such file or directory in /home3/tibamefe/public_html/cjd101/g1/api/orders/post_order_create.php on line 158
+[22-Aug-2025 00:49:48 Asia/Taipei] PHP Fatal error:  Uncaught Error: Failed opening required '../payment/generateMacValue.php' (include_path='.:/opt/alt/php81/usr/share/pear:/opt/alt/php81/usr/share/php:/usr/share/pear:/usr/share/php') in /home3/tibamefe/public_html/cjd101/g1/api/orders/post_order_create.php:158
+Stack trace:
+#0 {main}
+  thrown in /home3/tibamefe/public_html/cjd101/g1/api/orders/post_order_create.php on line 158
+
+
+
+sudo unzip ~/Downloads/ngrok-v3-stable-darwin-amd64.zip -d /usr/local/bin
+
+ngrok config add-authtoken 30XIdw978059Rnuwnl4bYj73f55_6taN86WXWGEafVDU3Tgb7
