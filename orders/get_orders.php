@@ -1,5 +1,5 @@
 <?php
-//session_start();
+session_start();
 require_once("../common/cors.php");
 require_once("../common/conn.php");
 

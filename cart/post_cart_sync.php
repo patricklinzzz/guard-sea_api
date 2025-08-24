@@ -1,5 +1,5 @@
 <?php
-//session_start();
+session_start();
 require_once("../common/cors.php");
 require_once("../common/conn.php");
 
@@ -16,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
         $data = json_decode(file_get_contents('php://input'), true);
 
-        // 關鍵修正：檢查 items 陣列是否存在
         if (!isset($data['items']) || !is_array($data['items'])) {
             http_response_code(400);
             echo json_encode(["error" => "缺少必填欄位：items 或資料格式不正確"]);
@@ -27,7 +26,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         $results = [];
 
         foreach ($items_to_sync as $item) {
-            // 修正：檢查 product_id, quantity, size, color 是否都存在
             if (!isset($item['product_id'], $item['quantity'], $item['size'], $item['color'])) {
                 $results[] = ["error" => "商品資料格式不正確", "product_id" => $item['product_id'] ?? null];
                 continue;
@@ -43,7 +41,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 continue;
             }
 
-            // 修正：在 WHERE 條件中新增 size 和 color_code，以確保找到正確的商品規格
             $check_sql = "SELECT cart_item_id, quantity FROM cart_items WHERE member_id = '$member_id' AND product_id = '$product_id' AND size = '$size' AND color_code = '$color'";
             $check_result = $mysqli->query($check_sql);
 
@@ -58,7 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
                 $results[] = ["message" => "商品數量更新成功", "cart_item_id" => $cart_item_id, "product_id" => $product_id];
             } else {
-                // 修正：在 INSERT 語句中新增 size 和 color_code 欄位
                 $insert_sql = "INSERT INTO cart_items (member_id, product_id, quantity, size, color_code) VALUES ('$member_id', '$product_id', '$quantity', '$size', '$color')";
                 $mysqli->query($insert_sql);
                 

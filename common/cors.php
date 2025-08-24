@@ -1,6 +1,6 @@
 <?php
   // 修正：將 session_start() 放在最前面
-  session_start();
+  //session_start();
   // 允許的域名列表
   $allowed_origins = [
     "http://localhost:5173",
