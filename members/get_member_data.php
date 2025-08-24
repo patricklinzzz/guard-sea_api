@@ -1,5 +1,5 @@
 <?php
-//session_start();
+session_start();
 require_once("../common/cors.php");
 require_once("../common/conn.php");
 
@@ -8,7 +8,7 @@ header("Content-Type: application/json; charset=UTF-8");
 if ($_SERVER['REQUEST_METHOD'] == "GET") {
     try {
         if (!isset($_SESSION['member_id'])) {
-            http_response_code(401); // Unauthorized
+            http_response_code(401); 
             echo json_encode(["error" => "未授權，請先登入"]);
             exit();
         }
@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == "GET") {
         }
 
         if ($result->num_rows === 0) {
-            http_response_code(404); // Not Found
+            http_response_code(404); 
             echo json_encode(["error" => "找不到該會員資料"]);
             exit();
         }
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] == "GET") {
         echo json_encode(["message" => "會員資料獲取成功", "member" => $member_data]);
 
     } catch (Exception $e) {
-        http_response_code(500); // Internal Server Error
+        http_response_code(500); 
         echo json_encode([
             "error" => "伺服器發生錯誤",
             "message" => $e->getMessage()
@@ -46,6 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] == "GET") {
     exit();
 }
 
-http_response_code(405); // Method Not Allowed
+http_response_code(405); 
 echo json_encode(["error" => "僅允許 GET 請求"]);
 ?>
