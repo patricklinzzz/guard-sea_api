@@ -1,5 +1,4 @@
 <?php
-// 錯誤報告 (用於開發環境，上線前應關閉)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -34,7 +33,6 @@ try {
     $status_safe = $mysqli->real_escape_string($data['status']); // 跳脫字串中的特殊字元
 
     // 直接將變數拼接到 SQL 查詢字串中
-    // 主要鍵欄位已從 'id' 修正為 'activity_id'
     $sql = "UPDATE activities SET status = '" . $status_safe . "' WHERE activity_id = " . $event_id_safe; 
     
     // 執行查詢

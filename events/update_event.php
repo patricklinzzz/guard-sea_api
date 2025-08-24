@@ -12,8 +12,6 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-W
 
 require_once("../common/cors.php");
 require_once("../common/conn.php");
-
-// 引入你新的圖片上傳函式
 require_once("../coverimage.php");
 
 try {
@@ -57,7 +55,6 @@ try {
             // 如果有新圖片上傳，則使用新圖片的路徑
             $image_url_for_db = $new_image_url;
         } elseif (isset($_POST['remove_image']) && $_POST['remove_image'] == 'true') {
-            // 如果前端明確要求移除圖片，則設定為 null
             $image_url_for_db = null;
         }
         

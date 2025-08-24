@@ -1,13 +1,13 @@
 <?php
 require_once("../common/cors.php");
-require_once("../common/conn.php"); // 這裡要放連線 MySQL 的程式
+require_once("../common/conn.php"); 
 header("Content-Type: application/json; charset=UTF-8");
 
 if ($_SERVER['REQUEST_METHOD'] === "GET") {
 
     $response_data = new stdClass();
 
-    // 獲取活動列表，直接使用 query()
+    // 獲取活動列表
     $sql_events = "SELECT * FROM activities a
                     JOIN activity_categories c ON a.category_id = c.category_id
                     ORDER BY a.start_date DESC;";
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === "GET") {
 
     $response_data->events = $activities;
 
-    // 獲取分類列表，直接使用 query()
+    // 獲取分類列表
     $sql_categories = "SELECT category_id, category_name FROM activity_categories";
     $result_categories = $mysqli->query($sql_categories);
     if (!$result_categories) {

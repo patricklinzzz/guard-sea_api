@@ -1,13 +1,9 @@
 <?php
-// 錯誤報告 (用於開發環境，上線前應關閉)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // 引入資料庫連線檔案
-// 假設 common/conn.php 檔案會建立 $mysqli 資料庫連線物件
-// require_once __DIR__ . '/../common/conn.php'; 
-// require_once __DIR__ . '/../coverimage.php'; 
 require_once("../common/cors.php");
 require_once("../common/conn.php");
 require_once("../coverimage.php");
@@ -61,16 +57,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         // 對所有要插入到 SQL 查詢中的變數進行跳脫處理
-        // 這對於防止 SQL 注入非常重要，尤其是在使用字串拼接時
         $title_safe = $mysqli->real_escape_string($title);
         $preface_safe = $mysqli->real_escape_string($preface);
         $description_safe = $mysqli->real_escape_string($description);
         $start_date_safe = $mysqli->real_escape_string($start_date);
         $end_date_safe = $mysqli->real_escape_string($end_date);
         $registration_close_date_safe = $mysqli->real_escape_string($registration_close_date);
-        $presenter_safe = $mysqli->real_escape_string($presenter); // 主講人欄位進行跳脫
+        $presenter_safe = $mysqli->real_escape_string($presenter); 
         $location_safe = $mysqli->real_escape_string($location);
-        // quota 已經轉為 int，理論上不需要 real_escape_string，但為避免潛在問題，直接使用
         $notes_safe = $mysqli->real_escape_string($notes);
         // category_id 應該轉為 int
         $category_id_safe = (int)$category_id;
@@ -78,7 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $imageUrl_safe = $mysqli->real_escape_string($imageUrl ?? ''); // 確保即使為 null 也進行跳脫
 
         // 準備 SQL 插入語句，直接拼接變數
-        // 注意：字串值需要用單引號包起來
         $sql = "INSERT INTO activities (
                     title, category_id, preface, description, start_date, 
                     end_date, location, quota, registration_close_date, notes, status, image_url, presenter
