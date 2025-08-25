@@ -29,10 +29,29 @@ $linePayChannelId = $_ENV['LINE_PAY_CHANNEL_ID'];
 $linePayChannelSecret = $_ENV['LINE_PAY_CHANNEL_SECRET'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['transactionId']) && isset($_GET['orderId'])) {
+        $linePayOrderId = $_GET['orderId'];
+        $sql = "SELECT order_id FROM orders WHERE transaction_id = '" . $mysqli->real_escape_string($linePayOrderId) . "'";
+        $result = $mysqli->query($sql);
+    
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $internalOrderId = $row['order_id'];
+        } else {
+            http_response_code(404);
+            error_log("Line Pay GET: Order ID not found - " . $linePayOrderId);
+            header("Location: " . $_ENV['LINEPAY_CLIENT_BACK_URL'] . "?status=error");
+            exit();
+        }
+        
+        error_log("DEBUG: GET request received. Redirecting with orderId: " . $internalOrderId);
+    
+        header("Location: " . $_ENV['LINEPAY_CLIENT_BACK_URL'] . "?order_id=" . $internalOrderId);
+        ob_end_flush();
+        exit();
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['transactionId']) && isset($_GET['orderId'])) {
     $linePayOfficialTransactionId = $_GET['transactionId'];
     $linePayOrderId = $_GET['orderId'];
 
-    
     $linePayConfirmUrl = "https://sandbox-api-pay.line.me/v3/payments/" . $linePayOfficialTransactionId . "/confirm";
 
     $sql = "SELECT order_id, final_amount FROM orders WHERE transaction_id = '" . $mysqli->real_escape_string($linePayOrderId) . "'";
@@ -53,6 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['transactionId']) && iss
         "amount" => (int)$orderAmount,
         "currency" => "TWD"
     ];
+    error_log("DEBUG: Confirmation Amount -> " . (int)$orderAmount);
     
     $confirmBodyJson = json_encode($confirmBody, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 

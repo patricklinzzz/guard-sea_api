@@ -79,19 +79,29 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         $linepay_products = [];
         while ($row = $cart_result->fetch_assoc()) {
             $cart_items[] = $row;
-            $subtotal_amount += $row['price'] * $row['quantity'];
+            $price = (float)$row['price'];
+            $quantity = (int)$row['quantity'];
+            $subtotal_amount += $price * $quantity;
             $item_names[] = $row['name'];
-                $linepay_products[] = [
-                "id" => $row['product_id'],
+            $linepay_products[] = [
+                "id" => (string)$row['product_id'],
                 "name" => $row['name'],
-                "quantity" => $row['quantity'],
-                "price" => $row['price']
+                "quantity" => $quantity,
+                "price" => $price
             ];
         }
-
-        $shipping_fee = 60;
-        $discount_amount = 0;
+        // $shipping_fee = 60;
+        // $discount_amount = 0;
+        $subtotal_amount = (int)$subtotal_amount;
+        $shipping_fee = (int)60;
+        $discount_amount = (int)0;
         $final_amount = $subtotal_amount + $shipping_fee - $discount_amount; 
+                $linepay_products_total = 0;
+                foreach ($linepay_products as $product) {
+                    $linepay_products_total += $product['price'] * $product['quantity'];
+                }
+            
+        
 
         $order_sql = "INSERT INTO orders (member_id, order_date, status, shipping_address, contact_phone, coupon_id, subtotal_amount, shipping_fee, discount_amount, final_amount, payment_method, receiver_name, receiver_address, receiver_phone, payment_status, notes)
                     VALUES ('$member_id', '$order_date', '$order_status', '$receiver_address', '$contact_phone', " . ($coupon_id ? "'$coupon_id'" : 'NULL') . ", '$subtotal_amount', '$shipping_fee', '$discount_amount', '$final_amount', '$payment_method', '$receiver_name', '$receiver_address', '$receiver_phone', '$payment_status', " . ($notes ? "'$notes'" : 'NULL') . ")";
@@ -128,6 +138,12 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         ];
         //綠界第三方支付
         if ($payment_method === 'credit_card') {
+            // ============================ 偵錯點開始 ============================
+            error_log("--- ECPAY AMOUNT DEBUGGING ---");
+            error_log("FINAL AMOUNT (Value): " . $final_amount);
+            error_log("FINAL AMOUNT (Type): " . gettype($final_amount));
+            error_log("--- END DEBUGGING ---");
+            // ============================ 偵錯點結束 ============================
             $MerchantID = "2000132";
             $HashKey = "5294y06p4m7u3d8e";
             $HashIV = "EkRm7iFT261dpevs";
@@ -137,11 +153,11 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 "MerchantTradeNo" => "GS" . $order_id . uniqid(),
                 "MerchantTradeDate" => date('Y/m/d H:i:s'),
                 "PaymentType" => "aio",
-                "TotalAmount" => $final_amount,
+                "TotalAmount" => (int)$final_amount,
                 "TradeDesc" => "商品訂單",
                 "ItemName" => implode('#', $item_names),
                 "ReturnURL" => "https://tibamef2e.com/cjd101/g1/api/payment/ecpay_callback.php", 
-                "ChoosePayment" => "Credit",
+                "ChoosePayment" => "ALL",
                 "EncryptType" => 1,
                 "IgnorePayment" => "WeiXin#TWQR#BNPL#CVS#BARCODE#ATM#WebATM",
                 "ClientBackURL" => "https://tibamef2e.com/cjd101/g1/front/ordercomplete?order_id=$order_id"
@@ -153,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             $response['payment_form'] = $ecpayData;
             $response['payment_url'] = "https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5";
             $response['message'] = "訂單建立成功，準備跳轉至綠界支付頁面";
-        //linepay線上支付  
+        //linepay  
         }elseif ($payment_method === 'linepay') {
             $linePayChannelId = $_ENV['LINE_PAY_CHANNEL_ID']; 
             $linePayChannelSecret = $_ENV['LINE_PAY_CHANNEL_SECRET'];
@@ -162,21 +178,29 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             $linePayOrderId = "GS" . $order_id . time() . uniqid(); 
             $updateSql = "UPDATE orders SET transaction_id = '" . $mysqli->real_escape_string($linePayOrderId) . "' WHERE order_id = '$order_id'";
             $mysqli->query($updateSql);
+            if ($shipping_fee > 0) {
+                $linepay_products[] = [
+                    "id" => "shipping-fee",
+                    "name" => "運費",
+                    "quantity" => 1,
+                    "price" => (float)$shipping_fee
+                ];
+            }
+            $package_amount = $subtotal_amount + $shipping_fee;
             $requestBody = [
-                "amount" => (int)$subtotal_amount,
+                "amount" => (int)$final_amount,
                 "currency" => "TWD",
                 "orderId" => $linePayOrderId,
                 "packages" => [
                     [
                         "id" => "PKG-" . $order_id,
-                        "amount" => (int)$subtotal_amount,
-                        "products" => $linepay_products
+                        "amount" => (int)$package_amount,
+                        "products" => $linepay_products, 
                     ]
                 ],
                 "redirectUrls" => [
                     "confirmUrl" => $_ENV['LINEPAY_CONFIRM_URL'] . "?orderId=" . $linePayOrderId,
-                    "cancelUrl" => $_ENV['LINEPAY_CANCEL_URL'] . "?order_id=" . $order_id,
-                    "web" => $_ENV['LINEPAY_CLIENT_BACK_URL'] . "?order_id=" . $order_id
+                    
                 ]
             ];
             $requestBodyJson = json_encode($requestBody, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
@@ -189,6 +213,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 "X-LINE-Authorization-Nonce: " . $nonce,
                 "X-LINE-Authorization: " . $signature,
             ];
+        
             $ch = curl_init($linePayApiUrl);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
             curl_setopt($ch, CURLOPT_POSTFIELDS, $requestBodyJson);
@@ -208,6 +233,12 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             }
             curl_close($ch);
             $linePayResponse = json_decode($result, true);
+            // 加上錯誤日誌，方便追蹤問題
+            if ($httpcode !== 200 || (isset($linePayResponse['returnCode']) && $linePayResponse['returnCode'] !== '0000')) {
+                //error_log("LINE Pay Error Response: " . $result);
+            }
+
+            curl_close($ch);
             if ($httpcode !== 200) {
                 http_response_code($httpcode);
                 echo json_encode([
