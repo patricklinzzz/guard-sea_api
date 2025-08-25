@@ -27,8 +27,13 @@ if ($_SERVER['REQUEST_METHOD'] == "GET") {
                         o.order_id, o.order_date, o.status, o.subtotal_amount, o.shipping_fee,
                         o.discount_amount, o.final_amount, o.payment_method, o.receiver_name,
                         o.receiver_phone, o.receiver_address, o.contact_phone, o.notes,
-                        o.payment_status, o.transaction_id
+                        o.payment_status, o.transaction_id,
+                        m.fullname AS member_name, 
+                        m.email AS member_email,
+                        m.phone_number AS member_phone,
+                        m.address AS member_address
                     FROM orders AS o
+                    JOIN members AS m ON o.member_id = m.member_id
                     WHERE o.order_id = '$order_id' AND o.member_id = '$member_id'";
         
         $order_result = $mysqli->query($order_sql);
