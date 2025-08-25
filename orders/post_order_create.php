@@ -2,11 +2,12 @@
 session_start();
 require_once("../common/cors.php");
 require_once("../common/conn.php");
-require_once("../payment/generateMacValue.php"); 
+require_once("../payment/generateMacValue.php");
 
 header("Content-Type: application/json; charset=UTF-8");
 //手動載入 .env
-function loadEnv($filePath) {
+function loadEnv($filePath)
+{
     if (!file_exists($filePath)) {
         return false;
     }
@@ -26,7 +27,7 @@ function loadEnv($filePath) {
     }
     return true;
 }
-loadEnv(__DIR__ . '/../.env'); 
+loadEnv(__DIR__ . '/../.env');
 
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $mysqli->autocommit(FALSE);
@@ -38,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             exit();
         }
         $member_id = $_SESSION['member_id'];
-        
+
         $data = json_decode(file_get_contents('php://input'), true);
 
         if (!isset($data['payment_method'], $data['receiver_name'], $data['receiver_address'], $data['receiver_phone'], $data['contact_phone'])) {
@@ -72,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         if ($cart_result->num_rows === 0) {
             throw new Exception("購物車是空的，無法建立訂單");
         }
-        
+
         $cart_items = [];
         $subtotal_amount = 0;
         $item_names = [];
@@ -95,23 +96,33 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         $subtotal_amount = (int)$subtotal_amount;
         $shipping_fee = (int)60;
         $discount_amount = (int)0;
-        $final_amount = $subtotal_amount + $shipping_fee - $discount_amount; 
-                $linepay_products_total = 0;
-                foreach ($linepay_products as $product) {
-                    $linepay_products_total += $product['price'] * $product['quantity'];
-                }
-            
-        
+        $final_amount = $subtotal_amount + $shipping_fee - $discount_amount;
+        $linepay_products_total = 0;
+        foreach ($linepay_products as $product) {
+            $linepay_products_total += $product['price'] * $product['quantity'];
+        }
+
+
 
         $order_sql = "INSERT INTO orders (member_id, order_date, status, shipping_address, contact_phone, coupon_id, subtotal_amount, shipping_fee, discount_amount, final_amount, payment_method, receiver_name, receiver_address, receiver_phone, payment_status, notes)
                     VALUES ('$member_id', '$order_date', '$order_status', '$receiver_address', '$contact_phone', " . ($coupon_id ? "'$coupon_id'" : 'NULL') . ", '$subtotal_amount', '$shipping_fee', '$discount_amount', '$final_amount', '$payment_method', '$receiver_name', '$receiver_address', '$receiver_phone', '$payment_status', " . ($notes ? "'$notes'" : 'NULL') . ")";
-        
+
+        // 修改優惠券狀態
+        if ($coupon_id) {
+            $delete_coupon_sql = "update member_coupons set status=0 where member_coupon_id = '$coupon_id'";
+            $mysqli->query($delete_coupon_sql);
+
+            if ($mysqli->affected_rows === 0) {
+                throw new Exception("無法刪除或更新優惠券狀態: " . $mysqli->error);
+            }
+        }
+
         $mysqli->query($order_sql);
         $order_id = $mysqli->insert_id;
         if (!$order_id) {
             throw new Exception("無法建立訂單: " . $mysqli->error);
         }
-        
+
         foreach ($cart_items as $item) {
             $product_id = mysqli_real_escape_string($mysqli, $item['product_id']);
             $quantity = mysqli_real_escape_string($mysqli, $item['quantity']);
@@ -129,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
         $clear_cart_sql = "DELETE FROM cart_items WHERE member_id = '$member_id'";
         $mysqli->query($clear_cart_sql);
-        
+
         $mysqli->commit();
         $response = [
             "message" => "訂單建立成功",
@@ -156,26 +167,26 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 "TotalAmount" => (int)$final_amount,
                 "TradeDesc" => "商品訂單",
                 "ItemName" => implode('#', $item_names),
-                "ReturnURL" => "https://tibamef2e.com/cjd101/g1/api/payment/ecpay_callback.php", 
+                "ReturnURL" => "https://tibamef2e.com/cjd101/g1/api/payment/ecpay_callback.php",
                 "ChoosePayment" => "ALL",
                 "EncryptType" => 1,
                 "IgnorePayment" => "WeiXin#TWQR#BNPL#CVS#BARCODE#ATM#WebATM",
                 "ClientBackURL" => "https://tibamef2e.com/cjd101/g1/front/ordercomplete?order_id=$order_id"
             ];
-            
+
             $CheckMacValue = generateCheckMacValue($ecpayData, $HashKey, $HashIV);
             $ecpayData["CheckMacValue"] = $CheckMacValue;
-            
+
             $response['payment_form'] = $ecpayData;
             $response['payment_url'] = "https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5";
             $response['message'] = "訂單建立成功，準備跳轉至綠界支付頁面";
-        //linepay  
-        }elseif ($payment_method === 'linepay') {
-            $linePayChannelId = $_ENV['LINE_PAY_CHANNEL_ID']; 
+            //linepay  
+        } elseif ($payment_method === 'linepay') {
+            $linePayChannelId = $_ENV['LINE_PAY_CHANNEL_ID'];
             $linePayChannelSecret = $_ENV['LINE_PAY_CHANNEL_SECRET'];
             $linePayApiUrl = "https://sandbox-api-pay.line.me/v3/payments/request";
-            $nonce = uniqid(); 
-            $linePayOrderId = "GS" . $order_id . time() . uniqid(); 
+            $nonce = uniqid();
+            $linePayOrderId = "GS" . $order_id . time() . uniqid();
             $updateSql = "UPDATE orders SET transaction_id = '" . $mysqli->real_escape_string($linePayOrderId) . "' WHERE order_id = '$order_id'";
             $mysqli->query($updateSql);
             if ($shipping_fee > 0) {
@@ -195,12 +206,12 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                     [
                         "id" => "PKG-" . $order_id,
                         "amount" => (int)$package_amount,
-                        "products" => $linepay_products, 
+                        "products" => $linepay_products,
                     ]
                 ],
                 "redirectUrls" => [
                     "confirmUrl" => $_ENV['LINEPAY_CONFIRM_URL'] . "?orderId=" . $linePayOrderId,
-                    
+
                 ]
             ];
             $requestBodyJson = json_encode($requestBody, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
@@ -213,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 "X-LINE-Authorization-Nonce: " . $nonce,
                 "X-LINE-Authorization: " . $signature,
             ];
-        
+
             $ch = curl_init($linePayApiUrl);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
             curl_setopt($ch, CURLOPT_POSTFIELDS, $requestBodyJson);
@@ -221,7 +232,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
             $result = curl_exec($ch);
             $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            if(curl_errno($ch)) {
+            if (curl_errno($ch)) {
                 $error_msg = curl_error($ch);
                 curl_close($ch);
                 http_response_code(500);
@@ -259,14 +270,13 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 exit();
             }
         }
-        
+
         //貨到付款
         else {
             $response['message'] = "訂單已建立，感謝您的訂購！";
         }
         http_response_code(201);
         echo json_encode($response);
-
     } catch (Exception $e) {
         $mysqli->rollback();
         http_response_code(500);
@@ -285,4 +295,3 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
 http_response_code(405);
 echo json_encode(["error" => "僅允許 POST 請求"]);
-?>
