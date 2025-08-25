@@ -90,8 +90,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
                 "price" => $price
             ];
         }
-        // $shipping_fee = 60;
-        // $discount_amount = 0;
         $subtotal_amount = (int)$subtotal_amount;
         $shipping_fee = (int)60;
         $discount_amount = (int)0;
@@ -138,31 +136,23 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         ];
         //綠界第三方支付
         if ($payment_method === 'credit_card') {
-            // ============================ 偵錯點開始 ============================
-            error_log("--- ECPAY AMOUNT DEBUGGING ---");
-            error_log("FINAL AMOUNT (Value): " . $final_amount);
-            error_log("FINAL AMOUNT (Type): " . gettype($final_amount));
-            error_log("--- END DEBUGGING ---");
-            // ============================ 偵錯點結束 ============================
-            $MerchantID = "2000132";
-            $HashKey = "5294y06p4m7u3d8e";
+            $MerchantID = "3002607";
+            $HashKey = "pwFHCqoQZGmho4w6";
             $HashIV = "EkRm7iFT261dpevs";
 
             $ecpayData = [
                 "MerchantID" => $MerchantID,
-                "MerchantTradeNo" => "GS" . $order_id . uniqid(),
+                "MerchantTradeNo" => "GS" . time(),
                 "MerchantTradeDate" => date('Y/m/d H:i:s'),
                 "PaymentType" => "aio",
                 "TotalAmount" => (int)$final_amount,
                 "TradeDesc" => "商品訂單",
                 "ItemName" => implode('#', $item_names),
                 "ReturnURL" => "https://tibamef2e.com/cjd101/g1/api/payment/ecpay_callback.php", 
-                "ChoosePayment" => "ALL",
+                "ChoosePayment" => "Credit",
                 "EncryptType" => 1,
-                "IgnorePayment" => "WeiXin#TWQR#BNPL#CVS#BARCODE#ATM#WebATM",
                 "ClientBackURL" => "https://tibamef2e.com/cjd101/g1/front/ordercomplete?order_id=$order_id"
-            ];
-            
+            ];           
             $CheckMacValue = generateCheckMacValue($ecpayData, $HashKey, $HashIV);
             $ecpayData["CheckMacValue"] = $CheckMacValue;
             
@@ -233,11 +223,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             }
             curl_close($ch);
             $linePayResponse = json_decode($result, true);
-            // 加上錯誤日誌，方便追蹤問題
-            if ($httpcode !== 200 || (isset($linePayResponse['returnCode']) && $linePayResponse['returnCode'] !== '0000')) {
-                //error_log("LINE Pay Error Response: " . $result);
-            }
-
             curl_close($ch);
             if ($httpcode !== 200) {
                 http_response_code($httpcode);
