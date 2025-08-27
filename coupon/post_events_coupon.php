@@ -90,7 +90,7 @@ $sql = "
   INSERT INTO member_coupons
     (member_id, coupon_id, coupon_code, start_date, expiration_date, status)
   VALUES
-    ($member_id, $coupon_id, '$esc_code', NOW(), $expSql, 0)
+    ($member_id, $coupon_id, '$esc_code', NOW(), $expSql, 1)
 ";
 $ok = $mysqli->query($sql);
 
