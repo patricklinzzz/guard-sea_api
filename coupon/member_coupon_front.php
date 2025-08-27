@@ -6,7 +6,7 @@
   $member_id = $_SESSION['member_id'];
 
   if($_SERVER['REQUEST_METHOD']=="GET"){
-    $sql = "SELECT member_coupon_id id, coupon_code code, expiration_date validityPeriod, value, title FROM member_coupons mc JOIN coupons c ON (mc.coupon_id = c.coupon_id) WHERE member_id = $member_id AND status = 1;";
+    $sql = "SELECT member_coupon_id id, coupon_code, expiration_date validityPeriod, value, title FROM member_coupons mc JOIN coupons c ON (mc.coupon_id = c.coupon_id) WHERE member_id = $member_id AND status = 1;";
 
     $result = $mysqli->query($sql);
 
