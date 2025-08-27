@@ -56,6 +56,23 @@ if ($activity_id <= 0 || $phone === '') {
   exit();
 }
 
+// 檢查會員是否已經報名過此活動
+$check_sql = "SELECT COUNT(*) AS count FROM activity_registrations WHERE member_id = $member_id AND activity_id = $activity_id";
+$check_result = $mysqli->query($check_sql);
+if ($check_result) {
+  $row = $check_result->fetch_assoc();
+  if ($row['count'] > 0) {
+    echo json_encode(['status' => 'error', 'message' => '您已經報名過此活動，無需重複報名！'], JSON_UNESCAPED_UNICODE);
+    $mysqli->close();
+    exit();
+  }
+} else {
+  // 處理查詢失敗的情況
+  echo json_encode(['status' => 'error', 'message' => '查詢報名紀錄時發生錯誤: ' . $mysqli->error], JSON_UNESCAPED_UNICODE);
+  $mysqli->close();
+  exit();
+}
+
 // 插入資料庫
 $sql = "
   INSERT INTO activity_registrations
