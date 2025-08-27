@@ -46,29 +46,26 @@ try {
     $events = [];
     $today = date("Y-m-d H:i:s");
 
-    // 設定基礎 URL，請根據你的專案實際路徑修改
-    $base_url = "http://localhost:8888/guard-sea_api";
-
     while ($row = $result->fetch_assoc()) {
-        // 活動日期合併（含時間）
+        // 日期格式處理
         $start = date("Y/m/d H:i", strtotime($row['start_date']));
-        $end = date("Y/m/d H:i", strtotime($row['end_date']));
+        $end   = date("Y/m/d H:i", strtotime($row['end_date']));
         $event_date = ($start === $end) ? $start : $start . " ~ " . $end;
 
-        // 活動狀態判斷
+        // 狀態判斷
         $status = ($row['end_date'] < $today) ? "已完成" : "已報名";
 
-        // 將回傳的圖片路徑加上完整的基礎 URL
-        $full_image_url = $base_url . $row['image'];
+        // 圖片直接用資料庫欄位，若沒圖片回傳 null
+        $image_url = $row['image'] ?: null;
 
         $events[] = [
-            "id" => $row['reg_id'],
-            "activity_id" => $row['activity_id'],
-            "name" => $row['title'],
-            "image" => $full_image_url,
-            "date" => $event_date,
-            "location" => $row['location'],
-            "status" => $status
+            "id"          => (int)$row['reg_id'],
+            "activity_id" => (int)$row['activity_id'],
+            "name"        => $row['title'],
+            "image"       => $image_url,
+            "date"        => $event_date,
+            "location"    => $row['location'],
+            "status"      => $status
         ];
     }
 
@@ -77,7 +74,7 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode([
-        "error" => "伺服器發生錯誤",
+        "error"   => "伺服器發生錯誤",
         "message" => $e->getMessage()
     ]);
 } finally {
