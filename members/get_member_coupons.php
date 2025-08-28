@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   try {
     $member_id = $mysqli->real_escape_string($member_id);
-    $sql="select c.title,c.value,m.expiration_date from member_coupons as m inner join coupons as c on m.coupon_id =c.coupon_id where m.member_id = '$member_id'";
+    $sql="select c.title,c.value,m.expiration_date from member_coupons as m inner join coupons as c on m.coupon_id =c.coupon_id where m.member_id = '$member_id' and m.status = '1'";
     $result = $mysqli->query($sql);
     $data = $result->fetch_all(MYSQLI_ASSOC);
     echo json_encode(["success" => true, "data" =>$data]);
