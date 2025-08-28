@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             exit();
         }
 
-        $coupon_id = isset($data['coupon_id']) ? mysqli_real_escape_string($mysqli, $data['coupon_id']) : null;
+        $member_coupon_id = isset($data['coupon_id']) ? mysqli_real_escape_string($mysqli, $data['coupon_id']) : null;
         $payment_method = mysqli_real_escape_string($mysqli, $data['payment_method']);
         $receiver_name = mysqli_real_escape_string($mysqli, $data['receiver_name']);
         $receiver_phone = mysqli_real_escape_string($mysqli, $data['receiver_phone']);
@@ -99,15 +99,25 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         foreach ($linepay_products as $product) {
             $linepay_products_total += $product['price'] * $product['quantity'];
         }
-
-
+        
+        $coupon_id = null;
+        if ($member_coupon_id) {
+            $coupon_fetch_sql = "SELECT coupon_id FROM member_coupons WHERE member_coupon_id = '$member_coupon_id'";
+            $coupon_result = $mysqli->query($coupon_fetch_sql);
+            if ($coupon_result && $coupon_result->num_rows > 0) {
+                $coupon_row = $coupon_result->fetch_assoc();
+                $coupon_id = $coupon_row['coupon_id'];
+            } else {
+                throw new Exception("無效的優惠券或已使用");
+            }
+        }
 
         $order_sql = "INSERT INTO orders (member_id, order_date, status, shipping_address, contact_phone, coupon_id, subtotal_amount, shipping_fee, discount_amount, final_amount, payment_method, receiver_name, receiver_address, receiver_phone, payment_status, notes)
                     VALUES ('$member_id', '$order_date', '$order_status', '$receiver_address', '$contact_phone', " . ($coupon_id ? "'$coupon_id'" : 'NULL') . ", '$subtotal_amount', '$shipping_fee', '$discount_amount', '$final_amount', '$payment_method', '$receiver_name', '$receiver_address', '$receiver_phone', '$payment_status', " . ($notes ? "'$notes'" : 'NULL') . ")";
 
         // 修改優惠券狀態
-        if ($coupon_id) {
-            $delete_coupon_sql = "update member_coupons set status=0 where member_coupon_id = '$coupon_id'";
+        if ($member_coupon_id) {
+            $delete_coupon_sql = "update member_coupons set status=0 where member_coupon_id = '$member_coupon_id'";
             $mysqli->query($delete_coupon_sql);
 
             if ($mysqli->affected_rows === 0) {
