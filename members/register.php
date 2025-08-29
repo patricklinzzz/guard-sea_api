@@ -90,7 +90,7 @@ if ($mysqli->query($sql_insert) === TRUE) {
       INSERT INTO member_coupons
         (member_id, coupon_id, coupon_code, start_date, expiration_date, status)
       VALUES
-        ($memberId, $cid, '$escCode', NOW(), $expSql, 0)
+        ($memberId, $cid, '$escCode', NOW(), $expSql, 1)
     ";
     if ($mysqli->query($sqlCoupon)) {
       $issued[] = [
@@ -98,7 +98,7 @@ if ($mysqli->query($sql_insert) === TRUE) {
         'coupon_code'     => $code,
         'start_date'      => date('Y-m-d H:i:s'),
         'expiration_date' => is_null($valid_days) ? null : date('Y-m-d', strtotime("+$valid_days days")),
-        'status'          => 0
+        'status'          => 1
       ];
     } else {
       error_log("發券失敗 coupon_id=$cid: " . $mysqli->error);

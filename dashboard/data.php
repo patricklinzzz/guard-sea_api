@@ -15,7 +15,7 @@
     $result = $mysqli->query($sql);
     $registrations_today = $result ->fetch_column();
 
-    $sql = "select COUNT(*) from activities where status = '進行中'";
+    $sql = "select COUNT(*) from activities where status = '報名中'";
     $result = $mysqli->query($sql);
     $activities = $result ->fetch_column();
 
